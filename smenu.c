@@ -17,6 +17,7 @@
 #define CHARSCHUNK 8
 #define WORDSCHUNK 8
 #define COLSCHUNK 16
+#define CTRL_N 0xE
 
 #define _XOPEN_SOURCE 600
 #include "config.h"
@@ -6469,20 +6470,23 @@ main(int argc, char * argv[])
                               search_mode, search_buf, &term, last_line,
                               tmp_max_word, &langinfo);
               break;
+            } else {
+              goto cleanup;
             }
           }
 
           /* Else ignore key */
-          break;
 
         case 'q':
         case 'Q':
         case 3: /* ^C */
+        case CTRL_N:
           /* q or Q of ^C has been pressed */
           /* """"""""""""""""""""""""""""" */
           if (search_mode)
             goto special_cmds_when_searching;
 
+          cleanup:
           {
             int i; /* generic index in this block */
 
@@ -6513,6 +6517,10 @@ main(int argc, char * argv[])
 
           (void)tputs(cursor_normal, 1, outch);
           restore_term(fileno(stdin));
+
+          if (buffer[0] == CTRL_N) {
+            exit(99);  // 'create new'; custom ext.
+          }
 
           exit(EXIT_SUCCESS);
 
